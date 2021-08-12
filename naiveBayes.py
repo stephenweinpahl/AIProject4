@@ -59,9 +59,76 @@ class NaiveBayesClassifier(classificationMethod.ClassificationMethod):
     To get the list of all possible features or labels, use self.features and 
     self.legalLabels.
     """
+    # trainingPrior is the prior probability given the label (counts the number of times a label is seen overall)
+    # trainingCondProb is the conditional probability that given index (feat, label) occurs (has total value of features)
+    # trainingCount is the total count for seeing given index (feat, label)
+    trainingPrior = util.Counter()
+    trainingCondProb = util.Counter()
+    trainingCount = util.Counter()
+    
+    
+    acc = []
 
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    for a in range(1, 11):
+      dataLimit =  int(len(trainingData)*a/10)
+      # collect training data and initial counts
+      for i in range(dataLimit):
+        datum = trainingData[i]
+        label = trainingLabels[i]
+        trainingPrior[label] += 1
+        for feat, val in datum.items():
+          trainingCount[(feat, label)] += 1
+          if val > 0:
+            trainingCondProb[(feat, label)] += val
+
+      # observe perfomrance on actual test data
+
+      k = self.k
+      dataPrior = util.Counter()
+      dataCondProb = util.Counter()
+      dataCount = util.Counter()
+
+      # need to recover test data points into the counts
+
+      for key, val in trainingPrior.items():
+        dataPrior[key] += val
+      for key, val in trainingCondProb.items():
+        dataCondProb[key] += val
+      for key, val in trainingCount.items():
+        dataCount[key] += val
+      
+      # apply smoothing, see the berkley website for the smoothing formula, it is applied over both values of 0 - 1 hence 2k:
+
+      for feat in self.features:
+        for label in self.legalLabels:
+          dataCondProb[(feat, label)] += k
+          dataCount[(feat, label)] += 2*k
+
+      # need to get the get the acutal probabilities for prior and condProb by normalizing (at this point we have counts)
+      total = 0
+      for key, val in dataPrior.items():
+        total += val
+
+      for key, val in dataPrior.items():
+        dataPrior[key] =  dataPrior[key]/total
+
+      for key, val in dataCondProb.items():
+        dataCondProb[key] =  dataCondProb[key]/dataCount[key]
+
+      self.dataPrior = dataPrior
+      self.dataCondProb = dataCondProb
+      # classifiy the data and check the accuracy
+      guess = self.classify(validationData)
+
+      accCount = 0
+      for i in range(len(guess)):
+        if guess[i] == validationLabels[i]:
+          accCount += 1
+      acc.append(100*accCount/len(guess))
+    print(acc)
+    
+
+      
         
   def classify(self, testData):
     """
@@ -86,10 +153,23 @@ class NaiveBayesClassifier(classificationMethod.ClassificationMethod):
     To get the list of all possible features or labels, use self.features and 
     self.legalLabels.
     """
-    logJoint = util.Counter()
     
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    # self.priorLabel is the priorProbobability of seeing the label it is a counter[label]
+    # datum is a counter with index of feature and a value where a feature is cordinates of a pixel?
+    logJoint = util.Counter()
+
+    for label in self.legalLabels:
+      if self.dataPrior[label] > 0:
+        logJoint[label] = math.log(self.dataPrior[label])
+      else:
+        logJoint[label] = 0
+      for feat, val in datum.items():
+      
+        # can't take log of a negative number
+        # also because we are taking logs, we add the cond probs instead of multiplying
+        if val > 0:
+           logJoint[label] += math.log(self.dataCondProb[(feat, label)])
+
     
     return logJoint
   
