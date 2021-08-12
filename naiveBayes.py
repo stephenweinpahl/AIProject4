@@ -69,6 +69,7 @@ class NaiveBayesClassifier(classificationMethod.ClassificationMethod):
     
     acc = []
 
+    # look the testing data in 10% increments
     for a in range(1, 11):
       dataLimit =  int(len(trainingData)*a/10)
       # collect training data and initial counts
@@ -83,7 +84,7 @@ class NaiveBayesClassifier(classificationMethod.ClassificationMethod):
 
       # observe perfomrance on actual test data
 
-      k = self.k
+      k = 2.0
       dataPrior = util.Counter()
       dataCondProb = util.Counter()
       dataCount = util.Counter()
