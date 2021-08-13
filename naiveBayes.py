@@ -85,7 +85,7 @@ class NaiveBayesClassifier(classificationMethod.ClassificationMethod):
           trainingCount[(feat, label)] += 1
           if val > 0:
             trainingCondProb[(feat, label)] += val
-
+      perf.append(time.time()-start)
       # observe perfomrance on actual test data
 
       k = 2.0
@@ -130,7 +130,7 @@ class NaiveBayesClassifier(classificationMethod.ClassificationMethod):
         if guess[i] == validationLabels[i]:
           accCount += 1
       acc.append(100*accCount/len(guess))
-      perf.append(time.time()-start)
+      
     print()
     print("Accuracy for Naive Bayes")
     print(acc)

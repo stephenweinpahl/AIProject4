@@ -8,6 +8,7 @@
 
 # Perceptron implementation
 import util
+import time
 PRINT = True
 
 class PerceptronClassifier:
@@ -44,12 +45,42 @@ class PerceptronClassifier:
     self.features = trainingData[0].keys() # could be useful later
     # DO NOT ZERO OUT YOUR WEIGHTS BEFORE STARTING TRAINING, OR
     # THE AUTOGRADER WILL LIKELY DEDUCT POINTS.
-    
-    for iteration in range(self.max_iterations):
-      print "Starting iteration ", iteration, "..."
-      for i in range(len(trainingData)):
-          "*** YOUR CODE HERE ***"
-          util.raiseNotDefined()
+
+    # we have to train the algo
+    perf = []
+    acc = []
+    for a in range(1, 11):
+      start = time.time()
+      dataLimit =  int(len(trainingData)*a/10)
+      # collect training data and initial counts
+      for iteration in range(self.max_iterations):  
+        for i in range(int(len(trainingData)*(a-1)/10), dataLimit):
+          datum = trainingData[i]
+          label = trainingLabels[i]
+          # make a prediction using our model and compare it to the training data label
+          prediction = self.classify([datum])[0]
+          # check to see if prediciton was correct, if not must correct the weight vectors
+          if prediction != label:
+            self.weights[label] += datum
+            self.weights[prediction] -= datum
+      perf.append(time.time()-start)
+      # now that model has been trained, we can test it on the validation data
+      accCount = 0
+      for i in range(len(validationData)):
+        datum = validationData[i]
+        label = validationLabels[i]
+        prediction = self.classify([datum])[0]
+        
+        # track number of correct predictions
+        if prediction == label:
+          accCount += 1
+      acc.append(100*accCount/len(validationData))
+    print()
+    print("Accuracy for Naive Bayes")
+    print(acc)
+    print("Time for Naive Bayes")
+    print(perf)
+    print()
     
   def classify(self, data ):
     """
