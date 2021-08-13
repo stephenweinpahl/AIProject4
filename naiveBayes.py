@@ -9,6 +9,7 @@
 import util
 import classificationMethod
 import math
+import time
 
 class NaiveBayesClassifier(classificationMethod.ClassificationMethod):
   """
@@ -63,9 +64,11 @@ class NaiveBayesClassifier(classificationMethod.ClassificationMethod):
     
     
     acc = []
+    perf = []
 
     # look the testing data in 10% increments
     for a in range(1, 11):
+      start = time.time()
       dataLimit =  int(len(trainingData)*a/10)
       # trainingPrior is the prior probability given the label (counts the number of times a label is seen overall)
        # trainingCondProb is the conditional probability that given index (feat, label) occurs (has total value of features)
@@ -127,7 +130,14 @@ class NaiveBayesClassifier(classificationMethod.ClassificationMethod):
         if guess[i] == validationLabels[i]:
           accCount += 1
       acc.append(100*accCount/len(guess))
+      perf.append(time.time()-start)
+    print()
+    print("Accuracy for Naive Bayes")
     print(acc)
+    print("Time for Naive Bayes")
+    print(perf)
+
+    print()
     
 
       
@@ -173,7 +183,6 @@ class NaiveBayesClassifier(classificationMethod.ClassificationMethod):
         # this means that the value of the feature is 0 or no features were detected
         # so take the compliment as the probobality that this feature could be in
         else:
-          print(math.log(1-self.dataCondProb[(feat, label)]))
           logJoint[label] += math.log(1-self.dataCondProb[(feat, label)])
         
     return logJoint
