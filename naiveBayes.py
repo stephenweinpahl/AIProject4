@@ -37,7 +37,7 @@ class NaiveBayesClassifier(classificationMethod.ClassificationMethod):
       
     # might be useful in your code later...
     # this is a list of all features in the training set.
-    self.features = list(set([ f for datum in trainingData for f in datum.keys() ]));
+    self.features = list(set([ f for datum in trainingData for f in datum.keys() ]))
     
     if (self.automaticTuning):
         kgrid = [0.001, 0.01, 0.05, 0.1, 0.5, 1, 5, 10, 20, 50]
@@ -59,12 +59,7 @@ class NaiveBayesClassifier(classificationMethod.ClassificationMethod):
     To get the list of all possible features or labels, use self.features and 
     self.legalLabels.
     """
-    # trainingPrior is the prior probability given the label (counts the number of times a label is seen overall)
-    # trainingCondProb is the conditional probability that given index (feat, label) occurs (has total value of features)
-    # trainingCount is the total count for seeing given index (feat, label)
-    trainingPrior = util.Counter()
-    trainingCondProb = util.Counter()
-    trainingCount = util.Counter()
+    
     
     
     acc = []
@@ -72,6 +67,12 @@ class NaiveBayesClassifier(classificationMethod.ClassificationMethod):
     # look the testing data in 10% increments
     for a in range(1, 11):
       dataLimit =  int(len(trainingData)*a/10)
+      # trainingPrior is the prior probability given the label (counts the number of times a label is seen overall)
+       # trainingCondProb is the conditional probability that given index (feat, label) occurs (has total value of features)
+       # trainingCount is the total count for seeing given index (feat, label)
+      trainingPrior = util.Counter()
+      trainingCondProb = util.Counter()
+      trainingCount = util.Counter()
       # collect training data and initial counts
       for i in range(dataLimit):
         datum = trainingData[i]
