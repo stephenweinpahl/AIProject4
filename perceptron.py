@@ -47,6 +47,8 @@ class PerceptronClassifier:
     # THE AUTOGRADER WILL LIKELY DEDUCT POINTS.
 
     # we have to train the algo
+    # self.weights[prediction] represents the vector of weight that we created
+    # self.weights[label] represents the vectors of weight that most accuractly depict the answer
     perf = []
     acc = []
     for a in range(1, 11):
@@ -60,6 +62,7 @@ class PerceptronClassifier:
           # make a prediction using our model and compare it to the training data label
           prediction = self.classify([datum])[0]
           # check to see if prediciton was correct, if not must correct the weight vectors
+          # the util class has a very useful counter additon and subtraction that makes this easy
           if prediction != label:
             self.weights[label] += datum
             self.weights[prediction] -= datum

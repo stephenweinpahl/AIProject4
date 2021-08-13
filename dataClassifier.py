@@ -69,7 +69,41 @@ def enhancedFeatureExtractorDigit(datum):
   """
   features =  basicFeatureExtractorDigit(datum)
 
-  "*** YOUR CODE HERE ***"
+  # we have checked pixels, but lets check how many "blocks" of filled in pixels exist, this should be a relativly fast feature
+  # to check instead of checking connected pixels or something like that
+  
+  factor = 7
+
+  for x in range(DIGIT_DATUM_WIDTH//factor):
+    for y in range(DIGIT_DATUM_HEIGHT//factor):
+      numPixs = 0
+      for xCnt in range(factor):
+        for yCnt in range(factor):
+          if datum.getPixel(factor*x + xCnt, factor*y + yCnt) > 0:
+            numPixs += 1
+      if numPixs >= .85*factor*factor:
+        features[(factor*x + 28,factor*y + 28)] = 1
+      else:
+        features[(factor*x + 28,factor*y + 28)] = 0
+
+  # check vertical "connected boxes"
+  
+  for x in range(1, DIGIT_DATUM_WIDTH//factor):
+    for y in range(1, DIGIT_DATUM_HEIGHT//factor):
+      if features[(factor*x + 28,factor*y + 28)] == 1 and features[(factor*(x-1) + 28,factor*y + 28)] == 1:
+        features[((factor*x + 280,factor*y + 280))] == 1
+      else:
+        features[((factor*x + 280,factor*y + 280))] == 0
+    
+  numVert = 0
+  for y in range(1, DIGIT_DATUM_WIDTH//factor):
+    for x in range(1, DIGIT_DATUM_HEIGHT//factor):
+      if features[(factor*x + 28,factor*y + 28)] == 1 and features[(factor*(x-1) + 28,factor*y + 28)] == 1:
+        features[((factor*x + 2800,factor*y + 2800))] == 1
+      else:
+        features[((factor*x + 2800,factor*y + 2800))] == 0
+
+
   
   return features
 
@@ -119,8 +153,6 @@ def analysis(classifier, guesses, testLabels, testData, rawTestData, printImage)
           print "==================================="
           print "Mistake on example %d" % i 
           print "Predicted %d; truth is %d" % (prediction, truth)
-          print "Image: "
-          print rawTestData[i]
           break
 
 
