@@ -166,13 +166,16 @@ class NaiveBayesClassifier(classificationMethod.ClassificationMethod):
       else:
         logJoint[label] = 0
       for feat, val in datum.items():
-      
-        # can't take log of a negative number
         # also because we are taking logs, we add the cond probs instead of multiplying
+        # first apply the formula to features which are present (value > 0)
         if val > 0:
-           logJoint[label] += math.log(self.dataCondProb[(feat, label)])
-
-    
+          logJoint[label] += math.log(self.dataCondProb[(feat, label)])
+        # this means that the value of the feature is 0 or no features were detected
+        # so take the compliment as the probobality that this feature could be in
+        else:
+          print(math.log(1-self.dataCondProb[(feat, label)]))
+          logJoint[label] += math.log(1-self.dataCondProb[(feat, label)])
+        
     return logJoint
   
   def findHighOddsFeatures(self, label1, label2):
