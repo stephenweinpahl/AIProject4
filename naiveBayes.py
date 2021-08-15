@@ -93,30 +93,43 @@ class NaiveBayesClassifier(classificationMethod.ClassificationMethod):
     for a in range(1, 11):
       start = time.time()
       dataLimit =  int(len(trainingData)*a/10)
+
       # trainingPrior is the prior probability given the label (counts the number of times a label is seen overall)
-       # trainingCondProb is the conditional probability that given index (feat, label) occurs (has total value of features)
-       # trainingCount is the total count for seeing given index (feat, label)
+       # trainingCondProb is the conditional probability that given index (feat, label) occurs (has total value of features) 
+       # supposed to represent P(feat | label)
+       # trainingCount is the total count for seeing given index (feat, label) represents the number of times that a feature with a label has occured
+
       trainingPrior = util.Counter()
       trainingCondProb = util.Counter()
       trainingCount = util.Counter()
+
       # collect training data and initial counts
+      # datum represents the set of features (f1, .., fn) of a test image
+      # idea is count the number of times a label occurs and store in trainingPrior
+      # next examine each feature and the corresponsding binary variable (0, 1)
+      # update the trainingCount coutner as a particular feat, label has been seen
+      # finally determine if the feature, label combo is has a value of 1, if so then it occured and add it to the condProb coutner
+
       for i in range(dataLimit):
         datum = trainingData[i]
         label = trainingLabels[i]
         trainingPrior[label] += 1
         for feat, val in datum.items():
           trainingCount[(feat, label)] += 1
+          #feature is present (value of 1)
           if val > 0:
             trainingCondProb[(feat, label)] += val
-      perf.append(time.time()-start)
-      # observe perfomrance on actual test data
 
+      # saves the time taken to train this part of the algorithm
+      perf.append(time.time()-start)
+
+      # observe perfomrance on actual test data
       k = self.k
       dataPrior = util.Counter()
       dataCondProb = util.Counter()
       dataCount = util.Counter()
 
-      # need to recover test data points into the counts
+      # need to recover test data points into the counts as this data has already been observed
 
       for key, val in trainingPrior.items():
         dataPrior[key] += val
@@ -126,6 +139,9 @@ class NaiveBayesClassifier(classificationMethod.ClassificationMethod):
         dataCount[key] += val
       
       # apply smoothing, see the berkley website for the smoothing formula, it is applied over both values of 0 - 1 hence 2k:
+      # big note: here c(fi,y) is represented by the dataCondProb
+      # in the smoothing formula we must divide c(fi,y) + k by (c(f = 0,y) + k + c(f = 1, y) + k) = c(f = 0,y) + c(f = 1, y) + 2k
+      # importantly c(f = 0,y) + c(f = 1, y) is actually just the dataCount!!!!! hence the dataCount += 2k
 
       for feat in self.features:
         for label in self.legalLabels:
@@ -133,6 +149,9 @@ class NaiveBayesClassifier(classificationMethod.ClassificationMethod):
           dataCount[(feat, label)] += 2*k
 
       # need to get the get the acutal probabilities for prior and condProb by normalizing (at this point we have counts)
+      # this is done by estimating probobabilites as count of particular variable/total number of counts
+      # P(y) = prior(y)/total
+      # P(F = fi | Y = y) is given on website == dataCondProb (key) /dataCount (key) and smoothing is already applied
       total = 0
       for key, val in dataPrior.items():
         total += val
@@ -146,7 +165,7 @@ class NaiveBayesClassifier(classificationMethod.ClassificationMethod):
       self.dataPrior = dataPrior
       self.dataCondProb = dataCondProb
 
-      # random sample the model 5 times with randomly selected 50 elements from test data
+      # random sample the model 5 times with randomly selected 50 elements from test data and collect mean and std
       currAcc = []
       for i in range(5):
         
@@ -163,6 +182,7 @@ class NaiveBayesClassifier(classificationMethod.ClassificationMethod):
         guesses = self.classify(currTestData)
         accCount = 0
         for k in range(len(guessIndex)):
+          # guess was correct
           if guesses[k] == currTestLabels[k]:
             accCount += 1
         #print(100.0*accCount/len(guesses))
