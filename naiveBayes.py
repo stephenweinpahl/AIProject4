@@ -111,7 +111,7 @@ class NaiveBayesClassifier(classificationMethod.ClassificationMethod):
       perf.append(time.time()-start)
       # observe perfomrance on actual test data
 
-      k = .2
+      k = self.k
       dataPrior = util.Counter()
       dataCondProb = util.Counter()
       dataCount = util.Counter()

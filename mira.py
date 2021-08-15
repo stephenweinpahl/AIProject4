@@ -59,7 +59,7 @@ class MiraClassifier:
     datum is a counter from features to values for those features
     representing a vector of values.
     """
-    c = .002
+    c = self.c
     accMean = []
     accStd = []
     numbers = range(100)

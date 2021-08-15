@@ -45,6 +45,7 @@ class PerceptronClassifier:
     datum is a counter from features to values for those features
     (and thus represents a vector a values).
     """
+    
     accMean = []
     accStd = []
     numbers = range(100)
