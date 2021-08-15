@@ -9,6 +9,10 @@
 # Perceptron implementation
 import util
 import time
+import samples
+import dataClassifier
+import random
+import numpy
 PRINT = True
 
 class PerceptronClassifier:
@@ -41,6 +45,24 @@ class PerceptronClassifier:
     datum is a counter from features to values for those features
     (and thus represents a vector a values).
     """
+    accMean = []
+    accStd = []
+    numbers = range(100)
+    # Determine if the data is testing on digits or faces
+    isDigit = False
+    featureFunction = dataClassifier.enhancedFeatureExtractorFace
+    if self.legalLabels[-1] == 9:
+      isDigit = True
+      featureFunction = dataClassifier.enhancedFeatureExtractorDigit
+
+    # classifiy the testdata
+    if isDigit == False:
+      rawTestData = samples.loadDataFile("facedata/facedatatest", 100,60,70)
+      testLabels = samples.loadLabelsFile("facedata/facedatatestlabels",100)
+    else:
+      rawTestData = samples.loadDataFile("digitdata/testimages", 100,28,28)
+      testLabels = samples.loadLabelsFile("digitdata/testlabels", 100)
+    testData = map(featureFunction, rawTestData)
     
     self.features = trainingData[0].keys() # could be useful later
     # DO NOT ZERO OUT YOUR WEIGHTS BEFORE STARTING TRAINING, OR
@@ -67,22 +89,51 @@ class PerceptronClassifier:
             self.weights[label] += datum
             self.weights[prediction] -= datum
       perf.append(time.time()-start)
+
       # now that model has been trained, we can test it on the validation data
-      accCount = 0
-      for i in range(len(validationData)):
-        datum = validationData[i]
-        label = validationLabels[i]
-        prediction = self.classify([datum])[0]
+      # accCount = 0
+      # for i in range(len(validationData)):
+      #   datum = validationData[i]
+      #   label = validationLabels[i]
+      #   prediction = self.classify([datum])[0]
         
-        # track number of correct predictions
-        if prediction == label:
-          accCount += 1
-      acc.append(100*accCount/len(validationData))
+      #   # track number of correct predictions
+      #   if prediction == label:
+      #     accCount += 1
+      # acc.append(100*accCount/len(validationData))
+
+      # random sample the model 5 times with randomly selected 50 elements from test data
+      currAcc = []
+      for i in range(5):
+        guessIndex = random.sample(numbers, k = 50)
+        accCount = 0
+        currTestData = []
+        currTestLabels = []
+        for j in range(len(guessIndex)):
+          index = guessIndex[j]
+          currTestData.append(testData[index])
+          currTestLabels.append(testLabels[index])
+        accCount = 0
+        guesses = self.classify(currTestData)
+        accCount = 0
+        for k in range(len(guessIndex)):
+          if guesses[k] == currTestLabels[k]:
+            accCount += 1
+        #print(100.0*accCount/len(guesses))
+        currAcc.append(100.0*accCount/len(guesses))
+      
+      accMean.append(numpy.mean(currAcc))
+      accStd.append(numpy.std(currAcc))
+
+    
     print()
-    print("Accuracy for Naive Bayes")
-    print(acc)
+    print("Mean Accuracy for Perceptron on test data")
+    print(accMean)
+    print("Std Accuracy for Perceptron on test data")
+    print(accStd)
     print("Time for Naive Bayes")
     print(perf)
+
     print()
     
   def classify(self, data ):

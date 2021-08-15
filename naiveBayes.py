@@ -10,6 +10,10 @@ import util
 import classificationMethod
 import math
 import time
+import samples
+import dataClassifier
+import random
+import numpy
 
 class NaiveBayesClassifier(classificationMethod.ClassificationMethod):
   """
@@ -65,6 +69,25 @@ class NaiveBayesClassifier(classificationMethod.ClassificationMethod):
     
     acc = []
     perf = []
+    accMean = []
+    accStd = []
+    numbers = range(100)
+    # Determine if the data is testing on digits or faces
+    isDigit = False
+    featureFunction = dataClassifier.enhancedFeatureExtractorFace
+    if self.legalLabels[-1] == 9:
+      isDigit = True
+      featureFunction = dataClassifier.enhancedFeatureExtractorDigit
+
+    # classifiy the testdata
+    if isDigit == False:
+      rawTestData = samples.loadDataFile("facedata/facedatatest", 100,60,70)
+      testLabels = samples.loadLabelsFile("facedata/facedatatestlabels",100)
+    else:
+      rawTestData = samples.loadDataFile("digitdata/testimages", 100,28,28)
+      testLabels = samples.loadLabelsFile("digitdata/testlabels", 100)
+    testData = map(featureFunction, rawTestData)
+    
 
     # look the testing data in 10% increments
     for a in range(1, 11):
@@ -88,7 +111,7 @@ class NaiveBayesClassifier(classificationMethod.ClassificationMethod):
       perf.append(time.time()-start)
       # observe perfomrance on actual test data
 
-      k = 2.0
+      k = .2
       dataPrior = util.Counter()
       dataCondProb = util.Counter()
       dataCount = util.Counter()
@@ -122,18 +145,47 @@ class NaiveBayesClassifier(classificationMethod.ClassificationMethod):
 
       self.dataPrior = dataPrior
       self.dataCondProb = dataCondProb
-      # classifiy the data and check the accuracy
-      guess = self.classify(validationData)
 
-      accCount = 0
-      for i in range(len(guess)):
-        if guess[i] == validationLabels[i]:
-          accCount += 1
-      acc.append(100*accCount/len(guess))
+      # random sample the model 5 times with randomly selected 50 elements from test data
+      currAcc = []
+      for i in range(5):
+        
+        guessIndex = random.sample(numbers, k = 50)
+        
+        accCount = 0
+        currTestData = []
+        currTestLabels = []
+        for j in range(len(guessIndex)):
+          index = guessIndex[j]
+          currTestData.append(testData[index])
+          currTestLabels.append(testLabels[index])
+        accCount = 0
+        guesses = self.classify(currTestData)
+        accCount = 0
+        for k in range(len(guessIndex)):
+          if guesses[k] == currTestLabels[k]:
+            accCount += 1
+        #print(100.0*accCount/len(guesses))
+        currAcc.append(100.0*accCount/len(guesses))
+      
+      accMean.append(numpy.mean(currAcc))
+      accStd.append(numpy.std(currAcc))
+
+      
+      
+      # guess = self.classify(validationData)
+
+      # accCount = 0
+      # for i in range(len(guess)):
+      #   if guess[i] == validationLabels[i]:
+      #     accCount += 1
+      # acc.append(100*accCount/len(guess))
       
     print()
-    print("Accuracy for Naive Bayes")
-    print(acc)
+    print("Mean Accuracy for Naive Bayes on test data")
+    print(accMean)
+    print("Std Accuracy for Naive Bayes on test data")
+    print(accStd)
     print("Time for Naive Bayes")
     print(perf)
 
@@ -175,10 +227,11 @@ class NaiveBayesClassifier(classificationMethod.ClassificationMethod):
         logJoint[label] = math.log(self.dataPrior[label])
       else:
         logJoint[label] = 0
+     
       for feat, val in datum.items():
         # also because we are taking logs, we add the cond probs instead of multiplying
         # first apply the formula to features which are present (value > 0)
-        if val > 0:
+        if val > 0 and self.dataCondProb[(feat, label)] > 0:
           logJoint[label] += math.log(self.dataCondProb[(feat, label)])
         # this means that the value of the feature is 0 or no features were detected
         # so take the compliment as the probobality that this feature could be in

@@ -72,7 +72,7 @@ def enhancedFeatureExtractorDigit(datum):
   # we have checked pixels, but lets check how many "blocks" of filled in pixels exist, this should be a relativly fast feature
   # to check instead of checking connected pixels or something like that
   
-  factor = 7
+  factor = 4
 
   for x in range(DIGIT_DATUM_WIDTH//factor):
     for y in range(DIGIT_DATUM_HEIGHT//factor):
@@ -81,7 +81,7 @@ def enhancedFeatureExtractorDigit(datum):
         for yCnt in range(factor):
           if datum.getPixel(factor*x + xCnt, factor*y + yCnt) > 0:
             numPixs += 1
-      if numPixs >= .85*factor*factor:
+      if numPixs > 0:
         features[(factor*x + 28,factor*y + 28)] = 1
       else:
         features[(factor*x + 28,factor*y + 28)] = 0
