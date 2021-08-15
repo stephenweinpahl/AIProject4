@@ -238,8 +238,9 @@ class NaiveBayesClassifier(classificationMethod.ClassificationMethod):
     self.legalLabels.
     """
     
-    # self.priorLabel is the priorProbobability of seeing the label it is a counter[label]
-    # datum is a counter with index of feature and a value where a feature is cordinates of a pixel?
+    # self.priorLabel is the priorProbobability of seeing the label it is a counter[label] == P(label)
+    # datum is a counter with index of feature and a value where a feature is cordinates of a pixel
+    # this function is used to calculate the log probob
     logJoint = util.Counter()
 
     for label in self.legalLabels:
@@ -251,6 +252,9 @@ class NaiveBayesClassifier(classificationMethod.ClassificationMethod):
       for feat, val in datum.items():
         # also because we are taking logs, we add the cond probs instead of multiplying
         # first apply the formula to features which are present (value > 0)
+        # big issue to avoid is calculating probabilites that are zero, hench the check of dataCondProb > 0, if this equal zero it must be handled
+        # how this code handles it is to take the compliement of the probability. This works for vals = 0 becuase is the same as P( !feature value | label)
+        # which should be 1 - P(feaure | label) due to independence, however the issue with this implemetnation is what to do with zero cond probs, not sure if this is correct
         if val > 0 and self.dataCondProb[(feat, label)] > 0:
           logJoint[label] += math.log(self.dataCondProb[(feat, label)])
         # this means that the value of the feature is 0 or no features were detected
